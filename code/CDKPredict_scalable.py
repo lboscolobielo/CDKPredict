@@ -52,7 +52,7 @@ class CDKPredict_scalable:
         self.verbose = verbose
         self.feature_prevalence_ = None
     '''
-    n_models: number of CoxNet models to fit in the ensemble
+    n_models: number of base learners included in the framework. Default is n=100
     l1: float between 0 and 1, the elastic net mixing parameter. l1=1 corresponds to Lasso penalty, l1=0 corresponds to Ridge penalty
     val_size: float between 0 and 1, proportion of data to use as validation set if bootstrap=False
     n_folds: number of folds for cross-validation for hyperparameter tuning within each model
