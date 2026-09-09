@@ -18,7 +18,7 @@ class ReCAST:
     def __init__(self, n_models = 100, 
                  l1 = 1, 
                  val_size = 0.3, 
-                 n_folds = 5, 
+                 n_folds = 3, 
                  bootstrap = False, 
                  random_state = None, 
                  adaptive_lasso = False, 
@@ -52,7 +52,7 @@ class ReCAST:
         self.n_jobs = n_jobs
         self.verbose = verbose
     '''
-    n_models: number of CoxNet models to fit in the ensemble
+    n_models: number of base learners included in the framework. Deafult is n=100
     l1: float between 0 and 1, the elastic net mixing parameter. l1=1 corresponds to Lasso penalty, l1=0 to Ridge penalty. Default is l=1
     val_size: float between 0 and 1, proportion of data to use as validation set if bootstrap=False
     n_folds: number of folds for cross-validation for hyperparameter tuning within each model
