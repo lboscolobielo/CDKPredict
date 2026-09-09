@@ -1,6 +1,6 @@
 # CDKPredict
 
-This repository contains the code used for the "***Interpretable clinicogenomic model for risk-adapted therapeutic intervention in metastatic breast cancer***" paper
+This repository contains the code used for the "***Interpretable clinicogenomic model for risk-adapted therapeutic intervention in metastatic breast cancer***" paper, currently under revision
 
 ## Installation
 
