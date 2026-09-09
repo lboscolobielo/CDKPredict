@@ -15,7 +15,7 @@ from sksurv.metrics import cumulative_dynamic_auc
 
 class CDKPredict_scalable:
     def __init__(self, n_models = 100,
-                 l1 = 0.5,
+                 l1 = 1,
                  val_size = 0.3,
                  n_folds = 5,
                  bootstrap = False,
