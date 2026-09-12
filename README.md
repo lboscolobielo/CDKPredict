@@ -34,7 +34,7 @@ CDKPredict = ReCAST(
 For the scalable model:
 
 ```python
-CDKpredictS = CDKPredict_scalable(
+CDKPredictS = CDKPredict_scalable(
     n_models = 100, 
     l1 = 1, 
     n_folds=3, 
