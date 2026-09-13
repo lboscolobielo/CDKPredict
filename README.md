@@ -6,7 +6,7 @@ CDKPredict represents the implementation of ***ReCAST*** to predict clinical out
 Please refer to https://github.com/mskcc/ReCAST for instructions on how to install and use ReCAST. 
 
 In addition, we have provided in this repository the Python class used for implementing the scalable model (**CDKPredict-S**).  
-CDKPredict-S expands on the default ReCAST framework to implement the mean risk-distribution contribution from each feature to mitigate the risk of distributional risk shifts derived from missing variables. 
+CDKPredict-S expands on the default ReCAST framework to implement the mean risk contribution of each feature each as measured from the development set to mitigate the risk of distributional risk shifts derived from missing variables. 
 The requirements and dependencies for running CDKPredict-S are the same as for ReCAST. 
 
 
