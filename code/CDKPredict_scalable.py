@@ -190,7 +190,7 @@ class CDKPredict_scalable:
 
     def fit(self, X, y):
         if self.verbose:
-            print(f"Fitting {self.n_models} CoxNet Models...")
+            print(f"Fitting {self.n_models} base learners...")
         if 'Event' not in y.columns or 'Time' not in y.columns:
             raise ValueError("y must have columns 'Event' and 'Time'")
         if y.isnull().values.any():
@@ -279,9 +279,9 @@ class CDKPredict_scalable:
             except ValueError:
                 return np.nan
         search_range_c1 = (means[0], means[1])
-        cutoff_low_medium = find_crossover(0, 1, search_range_c1)
+        cutoff_low_intermediate = find_crossover(0, 1, search_range_c1)
         search_range_c2 = (means[1], means[2])
-        cutoff_medium_high = find_crossover(1, 2, search_range_c2)
+        cutoff_intermediate_high = find_crossover(1, 2, search_range_c2)
         if plot:
             if detailed:
                 x_min, x_max = np.min(risk_scores_array), np.max(risk_scores_array)
@@ -294,10 +294,10 @@ class CDKPredict_scalable:
                     gmm_total_density += pdf
                     plt.plot(x_range, pdf, linestyle='--', label=f'Component {i+1} PDF (Mean: {means[i]:.0f})')
                 plt.plot(x_range, gmm_total_density, color='blue', linewidth=1, label='Total GMM Density')
-                if not np.isnan(cutoff_low_medium):
-                    plt.axvline(cutoff_low_medium, color='green', linestyle='-', label=f'Cutoff C1 ({cutoff_low_medium:.2f})')
-                if not np.isnan(cutoff_medium_high):
-                    plt.axvline(cutoff_medium_high, color='#99000d', linestyle='-', label=f'Cutoff C2 ({cutoff_medium_high:.2f})')
+                if not np.isnan(cutoff_low_intermediate):
+                    plt.axvline(cutoff_low_intermediate, color='green', linestyle='-', label=f'Cutoff C1 ({cutoff_low_intermediate:.2f})')
+                if not np.isnan(cutoff_intermediate_high):
+                    plt.axvline(cutoff_intermediate_high, color='#99000d', linestyle='-', label=f'Cutoff C2 ({cutoff_intermediate_high:.2f})')
                 plt.title('GMM Fit')
                 plt.xlabel('Risk Score')
                 plt.ylabel('Density')
@@ -321,14 +321,14 @@ class CDKPredict_scalable:
                     plt.plot(x_range, pdf, linestyle='--', color=color, label=f'Component {i+1} PDF (Mean: {means[i]:.0f})')
                 if legend:
                     plt.legend(bbox_to_anchor=(1.05, 1), loc='best', frameon=False)
-                mask_low = x_range <= cutoff_low_medium
-                mask_med = (x_range > cutoff_low_medium) & (x_range <= cutoff_medium_high)
-                mask_high = x_range > cutoff_medium_high
+                mask_low = x_range <= cutoff_low_intermediate
+                mask_intermediate = (x_range > cutoff_low_intermediate) & (x_range <= cutoff_intermediate_high)
+                mask_high = x_range > cutoff_intermediate_high
                 color_low = '#228B22'
-                color_med = '#EEB422'
+                color_intermediate = '#EEB422'
                 color_high = '#FF3030'
                 plt.fill_between(x_range[mask_low], gmm_total_density[mask_low], color=color_low, alpha=0.5)
-                plt.fill_between(x_range[mask_med], gmm_total_density[mask_med], color=color_med, alpha=0.5)
+                plt.fill_between(x_range[mask_intermediate], gmm_total_density[mask_intermediate], color=color_intermediate, alpha=0.5)
                 plt.fill_between(x_range[mask_high], gmm_total_density[mask_high], color=color_high, alpha=0.5)
                 plt.gca().spines['top'].set_visible(False)
                 plt.gca().spines['right'].set_visible(False)
@@ -341,9 +341,9 @@ class CDKPredict_scalable:
                     mpl.rcParams['pdf.fonttype'] = 42
                     plt.savefig(save, bbox_inches='tight')
                 plt.show()
-        self.cutoff_low_medium_ = cutoff_low_medium
-        self.cutoff_medium_high_ = cutoff_medium_high
-        return print(f'cutoff between low and medium risk calculated at: {cutoff_low_medium:.2f}, cutoff between medium and high risk calculated at: {cutoff_medium_high:.2f}')
+        self.cutoff_low_intermediate_ = cutoff_low_intermediate
+        self.cutoff_intermediate_high_ = cutoff_intermediate_high
+        return print(f'cutoff between low and intermediate risk calculated at: {cutoff_low_intermediate:.2f}, cutoff between intermediate and high risk calculated at: {cutoff_intermediate_high:.2f}')
 
     def define_2_risk_groups(self, plot = False, save = False, figsize=(6,4), bins=30, legend = False, detailed = False):
         from sklearn.mixture import GaussianMixture
@@ -468,11 +468,11 @@ class CDKPredict_scalable:
         if classify:
             if verbose:
                 print(f'Activated the classify option, returning risk groups instead of continuous risk scores.')
-            if not hasattr(self, 'cutoff_') and not (hasattr(self, 'cutoff_low_medium_') and hasattr(self, 'cutoff_medium_high_')):
+            if not hasattr(self, 'cutoff_') and not (hasattr(self, 'cutoff_low_intermediate_') and hasattr(self, 'cutoff_intermediate_high_')):
                 raise RuntimeError("You must use the define_2_risk_groups or define_3_risk_groups method before classifying.")
             if groups == 3:
                 risk_groups = pd.Series(index=risk_scores_avg.index, dtype='object')
-                risk_groups = ['high' if score >= self.cutoff_medium_high_ else 'medium' if score >= self.cutoff_low_medium_ else 'low' for score in risk_scores_avg]
+                risk_groups = ['high' if score >= self.cutoff_intermediate_high_ else 'intermediate' if score >= self.cutoff_low_intermediate_ else 'low' for score in risk_scores_avg]
                 return pd.Series(risk_groups, index=risk_scores_avg.index, name='risk_group')
             elif groups == 2:
                 risk_groups = pd.Series(index=risk_scores_avg.index, dtype='object')
@@ -620,10 +620,10 @@ class CDKPredict_scalable:
     def get_train_risk_groups_3(self):
         if not self.fitted_:
             raise ValueError("You must fit the model before predicting")
-        if not hasattr(self, 'cutoff_low_medium_') or not hasattr(self, 'cutoff_medium_high_'):
+        if not hasattr(self, 'cutoff_low_intermediate_') or not hasattr(self, 'cutoff_intermediate_high_'):
             raise ValueError("You must define 3 risk groups before getting train risk groups with the 'define_3_risk_groups' method.")
         risk_groups = pd.Series(index=self.risk_scores_train.index, dtype='object')
-        risk_groups = ['high' if score >= self.cutoff_medium_high_ else 'medium' if score >= self.cutoff_low_medium_ else 'low' for score in self.risk_scores_train]
+        risk_groups = ['high' if score >= self.cutoff_intermediate_high_ else 'intermediate' if score >= self.cutoff_low_intermediate_ else 'low' for score in self.risk_scores_train]
         return pd.Series(risk_groups, index=self.risk_scores_train.index, name='risk_group')
 
     def get_train_risk_groups_2(self):
